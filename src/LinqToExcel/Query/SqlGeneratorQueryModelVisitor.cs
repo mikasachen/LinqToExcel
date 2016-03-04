@@ -134,7 +134,7 @@ namespace LinqToExcel.Query
                 }
 
                 SqlStatement.OrderBy = columnNames;
-                SqlStatement.ColumnNamesUsed.AddRange(columnNames);
+                SqlStatement.ColumnNamesUsed.Add(columnNames.First());
                 var orderDirection = orderClause.Orderings.First().OrderingDirection;
                 SqlStatement.OrderByAsc = (orderDirection == OrderingDirection.Asc) ? true : false;
             }
@@ -146,8 +146,8 @@ namespace LinqToExcel.Query
             var columnNames = GetResultColumnNames(queryModel);
             SqlStatement.Aggregate = string.Format("{0}({1})",
                 aggregateName,
-                columnNames);
-            SqlStatement.ColumnNamesUsed.AddRange(columnNames);
+                columnNames.First());
+            SqlStatement.ColumnNamesUsed.Add(columnNames.First());
         }
 
         protected void ProcessDistinctAggregate(QueryModel queryModel)

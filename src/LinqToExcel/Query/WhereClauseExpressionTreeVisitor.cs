@@ -150,11 +150,11 @@ namespace LinqToExcel.Query
         {
             //Set the column name to the property mapping if there is one, 
             //else use the property name for the column name
-            var columnName = (_columnMapping.ContainsKey(mExp.Member.Name)) ? 
+            var columnNames = (_columnMapping.ContainsKey(mExp.Member.Name)) ? 
                 _columnMapping[mExp.Member.Name] : 
                 new List<string> { mExp.Member.Name };
-            _whereClause.AppendFormat("[{0}]", columnName);
-            _columnNamesUsed.AddRange(columnName);
+            _whereClause.AppendFormat("[{0}]", columnNames.First());
+            _columnNamesUsed.Add(columnNames.First());
             return mExp;
         }
 
