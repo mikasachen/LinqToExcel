@@ -2,7 +2,7 @@
 
 namespace LinqToExcel.Attributes
 {
-    [AttributeUsage(AttributeTargets.Property, Inherited = true, AllowMultiple = false)]
+    [AttributeUsage(AttributeTargets.Property, Inherited = true, AllowMultiple = true)]
     public sealed class ExcelColumnAttribute : Attribute
     {
         private readonly string _columnName;
