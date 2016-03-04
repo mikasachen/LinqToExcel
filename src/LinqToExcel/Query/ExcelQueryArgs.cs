@@ -33,7 +33,7 @@ namespace LinqToExcel.Query
         {
             FileName = args.FileName;
             DatabaseEngine = args.DatabaseEngine;
-            ColumnMappings = args.ColumnMappings ?? new Dictionary<string, string>();
+            ColumnMappings = args.ColumnMappings ?? new Dictionary<string, List<string>>();
             Transformations = args.Transformations ?? new Dictionary<string, Func<string, object>>();
             StrictMapping = args.StrictMapping ?? StrictMappingType.None;
             UsePersistentConnection = args.UsePersistentConnection;

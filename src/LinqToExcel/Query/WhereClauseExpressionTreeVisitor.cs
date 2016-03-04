@@ -14,12 +14,12 @@ namespace LinqToExcel.Query
     {
         private readonly StringBuilder _whereClause = new StringBuilder();
         private readonly List<OleDbParameter> _params = new List<OleDbParameter>();
-        private readonly Dictionary<string, string> _columnMapping;
+        private readonly Dictionary<string, List<string>> _columnMapping;
         private readonly List<string> _columnNamesUsed = new List<string>();
         private readonly Type _sheetType;
         private readonly List<string> _validStringMethods;
 
-        public WhereClauseExpressionTreeVisitor(Type sheetType, Dictionary<string, string> columnMapping)
+        public WhereClauseExpressionTreeVisitor(Type sheetType, Dictionary<string, List<string>> columnMapping)
         {
             _sheetType = sheetType;
             _columnMapping = columnMapping;
@@ -152,9 +152,9 @@ namespace LinqToExcel.Query
             //else use the property name for the column name
             var columnName = (_columnMapping.ContainsKey(mExp.Member.Name)) ? 
                 _columnMapping[mExp.Member.Name] : 
-                mExp.Member.Name;
+                new List<string> { mExp.Member.Name };
             _whereClause.AppendFormat("[{0}]", columnName);
-            _columnNamesUsed.Add(columnName);
+            _columnNamesUsed.AddRange(columnName);
             return mExp;
         }
 
@@ -183,7 +183,7 @@ namespace LinqToExcel.Query
         }
 
         /// <summary>
-        /// Only As<>() method calls on the LinqToExcel.Row type are support
+        /// Only <c>As&lt;&gt;()</c> method calls on the LinqToExcel.Row type are supported.
         /// </summary>
         protected override Expression VisitMethodCallExpression(MethodCallExpression mExp)
         {
@@ -269,7 +269,7 @@ namespace LinqToExcel.Query
         /// <summary>
         /// Retrieves the column name from a method call expression
         /// </summary>
-        /// <param name="exp">Method Call Expression</param>
+        /// <param name="mExp">Method Call Expression</param>
         private string GetColumnName(MethodCallExpression mExp)
         {
             MethodCallExpression method = mExp;

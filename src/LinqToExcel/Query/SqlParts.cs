@@ -11,7 +11,7 @@ namespace LinqToExcel.Query
         public string Table { get; set; }
         public string Where { get; set; }
         public IEnumerable<OleDbParameter> Parameters { get; set; }
-        public string OrderBy { get; set; }
+        public List<string> OrderBy { get; set; }
         public bool OrderByAsc { get; set; }
         public List<string> ColumnNamesUsed { get; set; }
 
@@ -31,18 +31,27 @@ namespace LinqToExcel.Query
         public override string ToString()
         {
             var sql = new StringBuilder();
-            sql.AppendFormat("SELECT {0} FROM {1}",
-                Aggregate,
-                Table);
-            if (!String.IsNullOrEmpty(Where))
-                sql.AppendFormat(" WHERE {0}", Where);
-            if (!String.IsNullOrEmpty(OrderBy))
+
+            if (ColumnNamesUsed.Count == 1)
             {
-                var asc = (OrderByAsc) ? "ASC" : "DESC";
-                sql.AppendFormat(" ORDER BY [{0}] {1}",
-                    OrderBy,
-                    asc);
+                sql.AppendFormat("SELECT {0} FROM {1}",
+                    Aggregate,
+                    Table);
+                if (!String.IsNullOrEmpty(Where))
+                    sql.AppendFormat(" WHERE {0}", Where);
+                if (OrderBy != null && OrderBy.Count == 1)
+                {
+                    var asc = (OrderByAsc) ? "ASC" : "DESC";
+                    sql.AppendFormat(" ORDER BY [{0}] {1}",
+                        OrderBy[0],
+                        asc);
+                }
             }
+            else if (ColumnNamesUsed.Count > 1)
+            {
+                throw new NotImplementedException();
+            }
+
             return sql.ToString();
         }
     }

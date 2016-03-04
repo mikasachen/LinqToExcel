@@ -24,7 +24,6 @@ namespace LinqToExcel.Extensions
         /// </summary>
         /// <param name="methodName">Name of the method</param>
         /// <param name="args">Method arguments</param>
-        /// <returns>Return value of the method</returns>
         public static object CallMethod(this object @object, string methodName, params object[] args)
         {
             return @object.GetType().InvokeMember(methodName, BindingFlags.InvokeMethod, null, @object, args);

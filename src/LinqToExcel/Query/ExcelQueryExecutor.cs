@@ -160,7 +160,6 @@ namespace LinqToExcel.Query
         /// <summary>
         /// Executes the sql query and returns the data results
         /// </summary>
-        /// <typeparam name="T">Data type in the main from clause (queryModel.MainFromClause.ItemType)</typeparam>
         /// <param name="queryModel">Linq query model</param>
         protected IEnumerable<object> GetDataResults(SqlParts sql, QueryModel queryModel)
         {
@@ -215,15 +214,15 @@ namespace LinqToExcel.Query
         /// <summary>
         /// Logs a warning for any property to column mappings that do not exist in the excel worksheet
         /// </summary>
-        /// <param name="Columns">List of columns in the worksheet</param>
+        /// <param name="columns">List of columns in the worksheet</param>
         private void LogColumnMappingWarnings(IEnumerable<string> columns)
         {
             foreach (var kvp in _args.ColumnMappings)
             {
-                if (!columns.Contains(kvp.Value))
+                if (!columns.Intersect(kvp.Value).Any())
                 {
-                    _log.WarnFormat("'{0}' column that is mapped to the '{1}' property does not exist in the '{2}' worksheet",
-                        kvp.Value, kvp.Key, _args.WorksheetName);
+                    _log.WarnFormat("'{0}' column(s) mapped to the '{1}' property not found in the '{2}' worksheet",
+                        string.Join(", ", kvp.Value.ToArray()), kvp.Key, _args.WorksheetName);
                 }
             }
         }
@@ -297,12 +296,13 @@ namespace LinqToExcel.Query
                 var result = Activator.CreateInstance(fromType);
                 foreach (var prop in props)
                 {
-                    var columnName = (_args.ColumnMappings.ContainsKey(prop.Name)) ?
+                    var columnNames = (_args.ColumnMappings.ContainsKey(prop.Name)) ?
                         _args.ColumnMappings[prop.Name] :
-                        prop.Name;
-                    if (columns.Contains(columnName))
+                        new List<string> { prop.Name };
+                    var columnIntersection = columns.Intersect(columnNames);
+                    if (columnIntersection.Any())
                     {
-                        var value = GetColumnValue(data, columnName, prop.Name).Cast(prop.PropertyType);
+                        var value = GetColumnValue(data, columnIntersection.First(), prop.Name).Cast(prop.PropertyType);
                         value = TrimStringValue(value);
                         result.SetProperty(prop.Name, value);
                     }
@@ -365,7 +365,7 @@ namespace LinqToExcel.Query
 
         private bool ColumnIsNotMapped(string columnName)
         {
-            return !_args.ColumnMappings.Values.Contains(columnName);
+            return !_args.ColumnMappings.SelectMany(m => m.Value).Contains(columnName);
         }
 
         private object GetColumnValue(IDataRecord data, string columnName, string propertyName)

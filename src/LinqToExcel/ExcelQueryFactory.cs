@@ -12,7 +12,7 @@ namespace LinqToExcel
 {
     public class ExcelQueryFactory : IExcelQueryFactory
     {
-        private readonly Dictionary<string, string> _columnMappings = new Dictionary<string, string>();
+        private readonly Dictionary<string, List<string>> _columnMappings = new Dictionary<string, List<string>>();
         private readonly Dictionary<string, Func<string, object>> _transformations = new Dictionary<string, Func<string, object>>();
         private readonly ILog _log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
         private ExcelQueryArgs _queryArgs;
@@ -83,7 +83,7 @@ namespace LinqToExcel
         /// <param name="column">Worksheet column name to map from</param>
         public void AddMapping(string propertyName, string column)
         {
-            _columnMappings[propertyName] = column;
+            _columnMappings[propertyName].Add(column);
         }
 
         /// <summary>
@@ -178,7 +178,7 @@ namespace LinqToExcel
         /// Returns a list of columns names that a worksheet contains
         /// </summary>
         /// <param name="worksheetName">Worksheet name to get the list of column names from</param>
-        /// <param name="namedRangeName">Named Range name to get the list of column names from</param>
+        /// <param name="namedRange">Named Range name to get the list of column names from</param>
         public IEnumerable<string> GetColumnNames(string worksheetName, string namedRange)
         {
             if (String.IsNullOrEmpty(FileName))
@@ -728,7 +728,7 @@ namespace LinqToExcel
         /// <param name="worksheetName">Name of the worksheet</param>
         /// <param name="fileName">Full path to the Excel spreadsheet</param>
         /// <param name="columnMappings">Column to property mappings</param>
-        public static ExcelQueryable<Row> Worksheet(string worksheetName, string fileName, Dictionary<string, string> columnMappings)
+        public static ExcelQueryable<Row> Worksheet(string worksheetName, string fileName, Dictionary<string, List<string>> columnMappings)
         {
             return new ExcelQueryable<Row>(
                 new ExcelQueryArgs(
@@ -744,7 +744,7 @@ namespace LinqToExcel
         /// <param name="worksheetIndex">Worksheet index ordered by name, not position in the workbook</param>
         /// <param name="fileName">Full path to the Excel spreadsheet</param>
         /// <param name="columnMappings">Column to property mappings</param>
-        public static ExcelQueryable<Row> Worksheet(int worksheetIndex, string fileName, Dictionary<string, string> columnMappings)
+        public static ExcelQueryable<Row> Worksheet(int worksheetIndex, string fileName, Dictionary<string, List<string>> columnMappings)
         {
             return new ExcelQueryable<Row>(
                 new ExcelQueryArgs(
@@ -761,7 +761,7 @@ namespace LinqToExcel
         /// <param name="worksheetName">Name of the worksheet</param>
         /// <param name="fileName">Full path to the Excel spreadsheet</param>
         /// <param name="columnMappings">Column to property mappings</param>
-        public static ExcelQueryable<TSheetData> Worksheet<TSheetData>(string worksheetName, string fileName, Dictionary<string, string> columnMappings)
+        public static ExcelQueryable<TSheetData> Worksheet<TSheetData>(string worksheetName, string fileName, Dictionary<string, List<string>> columnMappings)
         {
             return new ExcelQueryable<TSheetData>(
                 new ExcelQueryArgs(
@@ -778,7 +778,7 @@ namespace LinqToExcel
         /// <param name="worksheetIndex">Worksheet index ordered by name, not position in the workbook</param>
         /// <param name="fileName">Full path to the Excel spreadsheet</param>
         /// <param name="columnMappings">Column to property mappings</param>
-        public static ExcelQueryable<TSheetData> Worksheet<TSheetData>(int worksheetIndex, string fileName, Dictionary<string, string> columnMappings)
+        public static ExcelQueryable<TSheetData> Worksheet<TSheetData>(int worksheetIndex, string fileName, Dictionary<string, List<string>> columnMappings)
         {
             return new ExcelQueryable<TSheetData>(
                 new ExcelQueryArgs(

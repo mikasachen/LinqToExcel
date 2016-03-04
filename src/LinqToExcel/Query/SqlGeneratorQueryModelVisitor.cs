@@ -117,24 +117,24 @@ namespace LinqToExcel.Query
 
             if (orderClause != null)
             {
-                var columnName = "";
+                var columnNames = new List<string>();
                 var exp = orderClause.Orderings.First().Expression;
                 if (exp is MemberExpression)
                 {
                     var mExp = exp as MemberExpression;
-                    columnName = (_args.ColumnMappings.ContainsKey(mExp.Member.Name)) ?
+                    columnNames = (_args.ColumnMappings.ContainsKey(mExp.Member.Name)) ?
                         _args.ColumnMappings[mExp.Member.Name] :
-                        mExp.Member.Name;
+                        new List<string>() { mExp.Member.Name };
                 }
                 else if (exp is MethodCallExpression)
                 {
                     //row["ColumnName"] is being used in order by statement
-                    columnName = ((MethodCallExpression)exp).Arguments.First()
-                        .ToString().Replace("\"", "");
+                    columnNames = new List<string>() { ((MethodCallExpression)exp).Arguments.First()
+                        .ToString().Replace("\"", "") };
                 }
 
-                SqlStatement.OrderBy = columnName;
-                SqlStatement.ColumnNamesUsed.Add(columnName);
+                SqlStatement.OrderBy = columnNames;
+                SqlStatement.ColumnNamesUsed.AddRange(columnNames);
                 var orderDirection = orderClause.Orderings.First().OrderingDirection;
                 SqlStatement.OrderByAsc = (orderDirection == OrderingDirection.Asc) ? true : false;
             }
@@ -143,11 +143,11 @@ namespace LinqToExcel.Query
 
         protected void UpdateAggregate(QueryModel queryModel, string aggregateName)
         {
-            var columnName = GetResultColumnName(queryModel);
+            var columnNames = GetResultColumnNames(queryModel);
             SqlStatement.Aggregate = string.Format("{0}({1})",
                 aggregateName,
-                columnName);
-            SqlStatement.ColumnNamesUsed.Add(columnName);
+                columnNames);
+            SqlStatement.ColumnNamesUsed.AddRange(columnNames);
         }
 
         protected void ProcessDistinctAggregate(QueryModel queryModel)
@@ -158,12 +158,12 @@ namespace LinqToExcel.Query
                 throw new NotSupportedException("LinqToExcel only provides support for the Distinct() method when it's mapped to a class and a single property is selected. [e.g. (from row in excel.Worksheet<Person>() select row.FirstName).Distinct()]");
         }
 
-        private string GetResultColumnName(QueryModel queryModel)
+        private List<string> GetResultColumnNames(QueryModel queryModel)
         {
             var mExp = queryModel.SelectClause.Selector as MemberExpression;
             return (_args.ColumnMappings != null && _args.ColumnMappings.ContainsKey(mExp.Member.Name)) ?
                 _args.ColumnMappings[mExp.Member.Name] :
-                mExp.Member.Name;
+                new List<string>() { mExp.Member.Name };
         }
 
     }
