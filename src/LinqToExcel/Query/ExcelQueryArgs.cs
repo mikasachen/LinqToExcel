@@ -13,7 +13,7 @@ namespace LinqToExcel.Query
         internal DatabaseEngine DatabaseEngine { get; set; }
         internal string WorksheetName { get; set; }
         internal int? WorksheetIndex { get; set; }
-        internal Dictionary<string, string> ColumnMappings { get; set; }
+        internal Dictionary<string, List<string>> ColumnMappings { get; set; }
         internal Dictionary<string, Func<string, object>> Transformations { get; private set; }
         internal string NamedRangeName { get; set; }
         internal string StartRange { get; set; }

@@ -20,10 +20,10 @@ namespace LinqToExcel.Query
         {
             foreach (var property in typeof(T).GetProperties())
             {
-                ExcelColumnAttribute att = (ExcelColumnAttribute)Attribute.GetCustomAttribute(property, typeof(ExcelColumnAttribute));
+                ExcelColumnAttribute[] att = (ExcelColumnAttribute[])Attribute.GetCustomAttributes(property, typeof(ExcelColumnAttribute), true);
                 if (att != null && !args.ColumnMappings.ContainsKey(property.Name))
                 {
-                    args.ColumnMappings.Add(property.Name, att.ColumnName);
+                    args.ColumnMappings.Add(property.Name, att.Select(a => a.ColumnName).ToList());
                 }
             }
         }
