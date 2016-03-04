@@ -83,6 +83,11 @@ namespace LinqToExcel
         /// <param name="column">Worksheet column name to map from</param>
         public void AddMapping(string propertyName, string column)
         {
+            if(!_columnMappings.ContainsKey(propertyName))
+            {
+                _columnMappings.Add(propertyName, new List<string>());
+            }
+
             _columnMappings[propertyName].Add(column);
         }
 

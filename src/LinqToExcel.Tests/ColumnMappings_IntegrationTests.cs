@@ -85,7 +85,7 @@ namespace LinqToExcel.Tests
             foreach (LoggingEvent logEvent in _loggedEvents.GetEvents())
             {
                 if ((logEvent.Level == Level.Warn) &&
-                    (logEvent.RenderedMessage == "'The Big Cheese' column that is mapped to the 'CEO' property does not exist in the 'ColumnMappings' worksheet"))
+                    (logEvent.RenderedMessage == "'The Big Cheese' column(s) mapped to the 'CEO' property not found in the 'ColumnMappings' worksheet"))
                     warningsLogged++;
             }
             Assert.AreEqual(1, warningsLogged);
