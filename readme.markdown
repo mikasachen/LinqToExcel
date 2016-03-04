@@ -1,3 +1,5 @@
+This fork aims to adapt the LinqToExcel project to support multiple possible column names as input.
+
 # Welcome to the LinqToExcel project
 
 Linq to Excel is a .Net library that allows you to query Excel spreadsheets using the LINQ syntax.
