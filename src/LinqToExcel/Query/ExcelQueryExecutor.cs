@@ -26,8 +26,8 @@ namespace LinqToExcel.Query
             ValidateArgs(args);
             _args = args;
 
-			if (_log.IsDebugEnabled)
-				_log.DebugFormat("Connection String: {0}", ExcelUtilities.GetConnection(args).ConnectionString);
+            if (_log.IsDebugEnabled)
+                _log.DebugFormat("Connection String: {0}", ExcelUtilities.GetConnection(args).ConnectionString);
 
             GetWorksheetName();
         }
@@ -166,14 +166,14 @@ namespace LinqToExcel.Query
             IEnumerable<object> results;
             OleDbDataReader data = null;
 
-	        var conn = ExcelUtilities.GetConnection(_args);
+            var conn = ExcelUtilities.GetConnection(_args);
             var command = conn.CreateCommand();
             try
             {
                 if (conn.State == ConnectionState.Closed)
                     conn.Open();
 
-	            command.CommandText = sql.ToString();
+                command.CommandText = sql.ToString();
                 command.Parameters.AddRange(sql.Parameters.ToArray());
                 try { data = command.ExecuteReader(); }
                 catch (OleDbException e)
@@ -291,9 +291,14 @@ namespace LinqToExcel.Query
             if (_args.StrictMapping.Value != StrictMappingType.None)
                 this.ConfirmStrictMapping(columns, props, _args.StrictMapping.Value);
 
+            var dataSeqNumber = 0;
             while (data.Read())
             {
+                dataSeqNumber++;
+                var rowHasvalue = false;
                 var result = Activator.CreateInstance(fromType);
+
+                //judge if all columns mapped to props are empty value
                 foreach (var prop in props)
                 {
                     var columnNames = (_args.ColumnMappings.ContainsKey(prop.Name)) ?
@@ -302,12 +307,49 @@ namespace LinqToExcel.Query
                     var columnIntersection = columns.Intersect(columnNames);
                     if (columnIntersection.Any())
                     {
-                        var value = GetColumnValue(data, columnIntersection.First(), prop.Name).Cast(prop.PropertyType);
+                        var value = GetOriginalColumnValue(data, columnIntersection.First(), prop.Name);
                         value = TrimStringValue(value);
-                        result.SetProperty(prop.Name, value);
+                        if (value != null && value != DBNull.Value)
+                        {
+                            if (value.GetType() == typeof(string))
+                            {
+                                if (!string.IsNullOrEmpty((string)value))
+                                    rowHasvalue = true;
+                            }
+                            else
+                            {
+                                rowHasvalue = true;
+                            }
+                        }
                     }
                 }
-                results.Add(result);
+                if (rowHasvalue)
+                {
+                    foreach (var prop in props)
+                    {
+                        var columnNames = (_args.ColumnMappings.ContainsKey(prop.Name)) ?
+                            _args.ColumnMappings[prop.Name] :
+                            new List<string> { prop.Name };
+                        var columnIntersection = columns.Intersect(columnNames);
+                        if (columnIntersection.Any())
+                        {
+                            try
+                            {
+                                var value = GetColumnValue(data, columnIntersection.First(), prop.Name).Cast(prop.PropertyType);
+                                value = TrimStringValue(value);
+                                result.SetProperty(prop.Name, value);
+                            }
+                            catch (Exception ex)
+                            {
+                                ex.Data["LinqToExcel.DataSeqNumber"] = dataSeqNumber;
+                                ex.Data["LinqToExcel.ColumnName"] = string.Join(",", columnNames.ToArray());
+                                throw;
+                            }
+                        }
+                    }
+                    results.Add(result);
+                }
+
             }
             return results.AsEnumerable();
         }
@@ -366,6 +408,11 @@ namespace LinqToExcel.Query
         private bool ColumnIsNotMapped(string columnName)
         {
             return !_args.ColumnMappings.SelectMany(m => m.Value).Contains(columnName);
+        }
+
+        private object GetOriginalColumnValue(IDataRecord data, string columnName, string propertyName)
+        {
+            return data[columnName];
         }
 
         private object GetColumnValue(IDataRecord data, string columnName, string propertyName)
